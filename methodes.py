@@ -5,6 +5,134 @@ from urllib.request import quote, unquote
 
 # # ------------------------------FONCTIONS-----------------------------------------------------
 
+def supression_doublons(fcIn, gdb):
+    try:
+        fcInName = fcIn.split(os.path.sep)[-1]
+    except:
+        fcInName = fcIn
+    for field in arcpy.ListFields(fcIn):
+            if field.type == "Date":
+                    dateFieldName = field.name
+    if gdb[-4:] != ".gdb":
+            gdb += ".gdb"
+    chemin = gdb + os.path.sep
+    DoublonsResult = chemin + "DoublonsDefinis_" + fcInName 
+    SansDoublon = chemin + "SansDoublonsResult_" + fcInName
+
+    try:
+            arcpy.CopyFeatures_management(fcIn, DoublonsResult)
+            arcpy.AddMessage("CopyFeatures done")
+    except:
+            arcpy.AddMessage("retry to copy features...")
+            arcpy.Delete_management(DoublonsResult)
+            arcpy.CopyFeatures_management(fcIn, DoublonsResult)
+            arcpy.AddMessage("CopyFeatures done")
+    # Stockage des informations doublons dans un fichier .txt
+    with open(chemin + "ctrl_doublons.txt", "w") as f:
+            f.write("##################### Controle des doublons #####################\n")
+            GenererIdDoublons(DoublonsResult, chemin, ["Shape", dateFieldName, "nom"], "1", f)
+            GenererIdDoublons(DoublonsResult, chemin, ["Shape", dateFieldName], "2", f)
+            GenererIdDoublons(DoublonsResult, chemin, ["Shape"], "3", f)
+
+            arcpy.CopyFeatures_management(DoublonsResult, SansDoublon)
+            arcpy.DeleteIdentical_management(SansDoublon, ["Shape", dateFieldName])
+            f.write("\nNombre de polygones apres elimination des doublons => {0}".format(arcpy.GetCount_management(SansDoublon).getOutput(0)))
+            f.close()
+
+def detection_surface_ab_mos(gdb, Tb_Intersect, Layer1, FieldOIDLayer1, FieldClasse, MinPCT, MinPCTAb):
+    FieldPercentage = "PERCENTAGE"
+    SortieChampClasse = "CLASSE"
+    SortieChampPCT = "PERCENTAGE"
+
+    fieldsAberrant = ['Eaux maritimes',
+                'Mines, décharges minières, infrastructures et chantiers miniers',
+                'Plages, dunes et sable', 'Plages, dunes, sable', 'Roches et sols nus',
+                'Réseaux de communication', 'Tissu urbain continu', 'Tissu urbain discontinu',
+                'Zones humides intérieures', 'Zones industrielles ou commerciales et équipements']
+
+    SortieChampClasseAb = "CLASSE_Ab"
+    SortieChampPCTAb = "PERCENTAGE_Ab"
+    SortieChampSommeAb = "SUM_PERCENTAGE_Ab"
+
+    # arcpy.AddMessage("recuperation des champs ID de la couche et de la table")
+    FieldOIDTb = recup_oid(Tb_Intersect)
+    FieldOIDC1 = recup_oid(Layer1)
+
+    # Dictionnaire pour lequel les cles correspondent aux IDs de la couche en entrée
+    # au quelles sont associees des listes contenant la liste des noms de Classe,
+    # la liste des pourcentages associees, la liste des classes aberrantes,
+    # la liste des pourcentages associees, la somme des pourcentages des
+    # champs aberrants, et la mention de supression
+
+    sCurs = arcpy.da.SearchCursor(Tb_Intersect, [FieldOIDLayer1, FieldClasse, FieldPercentage],
+                                    where_clause=FieldPercentage + " >= " + str(MinPCT),
+                                    sql_clause=(None, "ORDER BY " + FieldOIDTb))
+    dico = DicoTableInters(sCurs, FieldClasse, Tb_Intersect, fieldsAberrant, MinPCTAb, MinPCT)
+
+    # On s'occupe des champs de sortie de la couche d'entree
+    Champs = [SortieChampClasse, SortieChampPCT, SortieChampClasseAb, SortieChampPCTAb, SortieChampSommeAb, 'A_SUPPRIMER']
+    CreateChamps(Layer1, dico, Champs)
+
+    uCurs = arcpy.da.UpdateCursor(Layer1,
+                                    [FieldOIDC1, SortieChampClasse, SortieChampPCT, SortieChampClasseAb, SortieChampPCTAb,
+                                    SortieChampSommeAb, 'A_SUPPRIMER'], sql_clause=(None, "ORDER BY " + FieldOIDC1))
+    update_layer1(uCurs, dico)
+
+    # Creation d'une couche d'entites sans aberrations
+    arcpy.MakeFeatureLayer_management(Layer1, 'Layer1',"A_SUPPRIMER IS NULL OR A_SUPPRIMER LIKE ''")
+    arcpy.CopyFeatures_management('Layer1', gdb + os.path.sep + Layer1.split('\\')[-1] + "_SansAb")
+    arcpy.Delete_management('Layer1')
+
+def calcul_overlaps(gdb, seuil, seuilSurface, coucheTravail, champs):
+    sCurs1 = [list(i) for i in arcpy.da.SearchCursor(coucheTravail, champs)]
+    sCurs2 = [i for i in sCurs1]
+    sCurs1.pop()
+    sCurs2.pop(0)
+    dico = {}
+    l = len(sCurs1)
+    for index, s1 in enumerate(sCurs1):
+        dico[s1[0]] = []
+        if index%100 == 0:
+            arcpy.AddMessage('{:.1f}% analysé'.format(index/l*100))
+        for s2 in sCurs2:
+            if (s2[4] - s1[4]).days > seuil:
+                break
+            if s1[1].disjoint(s2[1]):
+                continue
+            s_inter = s1[1].intersect(s2[1], 4)
+            area = s_inter.getArea("GEODESIC", "SQUAREMETERS")
+            area_org = s1[1].getArea("GEODESIC", "SQUAREMETERS")
+            rap = area/area_org
+            if rap >= seuilSurface:
+                dico[s1[0]].append([s2[0], area, rap])  
+        sCurs2.pop(0)
+    # arcpy.AddMessage(dico)
+
+    uCurs = arcpy.da.UpdateCursor(coucheTravail, champs)
+    for u in uCurs:
+        if u[0] in dico.keys() and dico[u[0]] != []:
+            u[2] = ''
+            u[3] = 0
+            for ol in dico[u[0]]:
+                try:
+                    u[2] += str(ol[0]) + ', '
+                    u[3] += 1
+                except TypeError:
+                    u[3] += 1
+                    pass
+            try:
+                uCurs.updateRow(u)
+            except RuntimeError:
+                arcpy.AddMessage("Valeur invalide")
+                u[2] = "Invalide"
+                uCurs.updateRow(u)
+    try:
+        arcpy.CopyFeatures_management(coucheTravail, gdb + "/" + coucheTravail)
+    except :
+        arcpy.Delete_management(gdb + "/" + coucheTravail)
+        arcpy.CopyFeatures_management(coucheTravail, gdb + "/" + coucheTravail)
+
+
 def ChampsFcIn(fcIn):
         fields = arcpy.ListFields(fcIn)
         fieldName = []
