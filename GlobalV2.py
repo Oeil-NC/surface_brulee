@@ -223,75 +223,43 @@ Relations, Sent, Viirs, D, GS = creation_dico(gdb, TableRel, ChampTableRel)
 
 '''CHANGEMENT ORDRE REFERENCE DSCGR puis VIIRS puis Groupe Incendie An-1'''
 arcpy.AddMessage("Classification selon DSCGR: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-def calcul_groups(seuil, Relations, Sent, D):
-    RefD = RefSentinel(D, Sent, Relations, "D", seuil)
-    dicoD = RefD[0]
-    Sent = RefD[1]
-    arcpy.AddMessage("Classification secondaire selon DSCGR: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    # dicoSD = InversionDicoRef(dicoD)
-    arcpy.AddMessage("Dico ok")
 
-    # return dicoRef, dicoSRef, SNT
-    Sent = OrdonnerSentinel(Sent, Relations)
-    SentSecD = SentinelSecondaire(dicoD, Relations, seuil, Sent)
+RefD = RefSentinel(D, Sent, Relations, seuil)
+dicoD = RefD[0]
+Sent = RefD[1]
 
-    dicoD = SentSecD[0]
-    dicoSD = InversionDicoRef(dicoD)
-    # dicoSD = SentSecD[1]
-    Sent = SentSecD[1]
-    Sent = [s for s in Sent if s not in dicoSD.keys()]  # A vérifier utilitée : comparaison Sent et Sent
-    arcpy.AddMessage("Longueur du dico inverse {}".format(dicoSD))
-    arcpy.AddMessage(str(len(Sent)) + " Sentinels a classer")
-    SentiDtest = [s for s in Sent if s[0] == "D"]
-    arcpy.AddMessage(SentiDtest)
-    return Sent,dicoD,dicoSD
+arcpy.AddMessage("Classification secondaire selon DSCGR: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-Sent, dicoD, dicoSD = calcul_groups(seuil, Relations, Sent, D)
+
+
+Sent, dicoD, dicoSD = calcul_groups(seuil, Relations, Sent, dicoD)
 
 if len(Sent) > 0:
     arcpy.AddMessage("Classification selon VIIRS: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     RefVIIRS = RefSentinel(Viirs, Sent, Relations, "V", seuil)
     dicoVIIRS = RefVIIRS[0]
     Sent = RefVIIRS[1]
+
     arcpy.AddMessage("Classification secondaire selon VIIRS: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    dicoSVIIRS = InversionDicoRef(dicoVIIRS)
-    arcpy.AddMessage(dicoSVIIRS)
-
-    # return dicoRef, dicoSRef, SNT
-    Sent = OrdonnerSentinel(Sent, Relations)
-    SentSecV = SentinelSecondaire(dicoVIIRS, Relations, seuil, Sent)
-    dicoVIIRS = SentSecV[0]
-    dicoSVIIRS = InversionDicoRef(dicoVIIRS)
-    # dicoSVIIRS = SentSecV[1]
-    Sent = SentSecV[1]
-    Sent = [s for s in Sent if s not in dicoSVIIRS.keys()]
-    arcpy.AddMessage(str(len(Sent)) + " Sentinels a classer")
-
-    if len(Sent) > 0:
-        arcpy.AddMessage("Classification selon Groupe Incendie An-1: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-        RefGS = RefSentinel(GS, Sent, Relations, "G", seuil)
-        dicoGS = RefGS[0]
-        Sent = RefGS[1]
-        arcpy.AddMessage("Classification secondaire selon Groupe Incendie An-1: " + dt.datetime.now().strftime(
-            "%d/%m/%Y %H:%M:%S"))
-        dicoSGS = InversionDicoRef(dicoGS)
-
-        # return dicoRef, dicoSRef, SNT
-        Sent = OrdonnerSentinel(Sent, Relations)
-        SentSecGS = SentinelSecondaire(dicoGS, Relations, seuil, Sent)
-        dicoGS = SentSecGS[0]
-        dicoSGS = InversionDicoRef(dicoGS)
-        # dicoSGS = SentSecGS[1]
-        Sent = SentSecGS[1]
-        Sent = [s for s in Sent if s not in dicoSGS.keys()]
-        arcpy.AddMessage(dicoSGS)
-        arcpy.AddMessage(str(len(Sent)) + " Sentinels a classer")
+    Sent, dicoVIIRS, dicoSVIIRS = calcul_groups(seuil, Relations, Sent, dicoVIIRS)
 
 if len(Sent) > 0:
-    '''Classement Sentinels restant dans l'ordre croissant'''
+    arcpy.AddMessage("Classification selon Groupe Incendie An-1: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    RefGS = RefSentinel(GS, Sent, Relations, "G", seuil)
+    dicoGS = RefGS[0]
+    Sent = RefGS[1]
+
+    arcpy.AddMessage("Classification secondaire selon Groupe Incendie An-1: " + dt.datetime.now().strftime(
+        "%d/%m/%Y %H:%M:%S"))
+    Sent, dicoGS, dicoSGS = calcul_groups(seuil, Relations, Sent, dicoVIIRS)
+
+if len(Sent) > 0:
+    # Classement Sentinels restant dans l'ordre croissant
     Sent = OrdonnerSentinel(Sent, Relations)
+    ###########################################
     file = open("test_regroupement_sent", 'wb')
     pickle.dump([Sent, Relations, seuil], file)
+    ###########################################
     dicoSent = ClasseOnlySentinel(Sent, Relations, seuil)
     arcpy.AddMessage(str(len(Sent)) + " Sentinels a classer")
 

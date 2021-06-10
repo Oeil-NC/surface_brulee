@@ -174,3 +174,14 @@ def creation_dico(gdb, TableRel, ChampTableRel):
     del GSID2
     GS = list(set(GS))
     return Relations,Sent,Viirs,D,GS
+
+
+def calcul_groups(seuil, Relations, Sent, dico):
+    Sent = OrdonnerSentinel(Sent, Relations)
+    SentSec = SentinelSecondaire(dico, Relations, seuil, Sent)
+    dico = SentSec[0]
+    dicoS = InversionDicoRef(dico)
+    Sent = SentSec[1]
+    Sent = [s for s in Sent if s not in dicoS.keys()]  # A vérifier utilitée : comparaison Sent et Sent
+    arcpy.AddMessage(str(len(Sent)) + " Sentinels a classer")
+    return Sent, dico, dicoS
