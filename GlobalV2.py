@@ -6,16 +6,19 @@
 # Date             : 07/04/2021
 # Object           : Chaine de traitement complète
 # ----------------------------------------------------------------------------------------------
-from regroupement import *
+import datetime as dt
+import os
+import pickle
+import sys
+
+import arcpy
+
+from doublons import *
 from FctArcpy import *
 from methodes import *
 from reference import *
-import sys, os
-import arcpy
-
-# from os import chdir
-import datetime as dt
-import pickle
+from regroupement import *
+from aberration_mos import *
 
 sys.setrecursionlimit(10000)
 arcpy.AddMessage("Limite de la récursion : " + str(sys.getrecursionlimit()))
@@ -88,35 +91,35 @@ for champ, couche in zip(ListChampsDate, ListCoucheRef):
         arcpy.CalculateField_management(couche, datedate_field, "!" + champ + "!")
 
 
-# # # ------------------------------DELETE----------------------------------------
-# arcpy.Delete_management("Merged_Data")
-# arcpy.Delete_management(checkGeomResult)
+# # ------------------------------DELETE----------------------------------------
+arcpy.Delete_management("Merged_Data")
+arcpy.Delete_management(checkGeomResult)
 
-# # --------------------Fusion et ajout d'un champ Date-------------------------
-# arcpy.AddMessage("Fusion et ajout d'un champ Date")
-# arcpy.Merge_management(bruts, Merged_Data)
-# date_field = arcpy.ListFields(Merged_Data, champDate).pop()
-# if date_field.type != "Date":
-#     arcpy.AddField_management(Merged_Data, "date_date", "Date")
-#     # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
-#     arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y%m%d')")
+# --------------------Fusion et ajout d'un champ Date-------------------------
+arcpy.AddMessage("Fusion et ajout d'un champ Date")
+arcpy.Merge_management(bruts, Merged_Data)
+date_field = arcpy.ListFields(Merged_Data, champDate).pop()
+if date_field.type != "Date":
+    arcpy.AddField_management(Merged_Data, "date_date", "Date")
+    # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
+    arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y%m%d')")
 
-#     # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y-%m-%d')")
+    # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y-%m-%d')")
 
-# arcpy.AddMessage("Done !")
+arcpy.AddMessage("Done !")
 
-# # ------------------------------Réparation des géométries----------------------------------------
-# fcIn = Merged_Data
-# arcpy.RepairGeometry_management(fcIn, True)
+# ------------------------------Réparation des géométries----------------------------------------
+fcIn = Merged_Data
+arcpy.RepairGeometry_management(fcIn, True)
 
-# # ------------------------------Vérification des géométries--------------------------------------
-# fcIn = Merged_Data
-# arcpy.CheckGeometry_management(fcIn, checkGeomResult)
-# nbPbGeom = int(arcpy.GetCount_management(checkGeomResult)[0])
-# arcpy.AddMessage("{} problème de géométrie restant à traiter".format(nbPbGeom))
-# if int(nbPbGeom) > 0:
-#     arcpy.AddMessage("Erreur de géométrie")
-#     sys.exit()
+# ------------------------------Vérification des géométries--------------------------------------
+fcIn = Merged_Data
+arcpy.CheckGeometry_management(fcIn, checkGeomResult)
+nbPbGeom = int(arcpy.GetCount_management(checkGeomResult)[0])
+arcpy.AddMessage("{} problème de géométrie restant à traiter".format(nbPbGeom))
+if int(nbPbGeom) > 0:
+    arcpy.AddMessage("Erreur de géométrie")
+    sys.exit()
 
 # # ------------------------------Doublons----------------------------------------
 
