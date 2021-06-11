@@ -324,8 +324,9 @@ def calcul_indice_confiance(gdb, couche, datedate_field, seuil_temp, seuil_spat)
 
     arcpy.Delete_management(gdb + "/" + coucheTravail)
     arcpy.Delete_management(coucheTravail)
-    arcpy.MakeFeatureLayer_management(gdb + "/" + couche, coucheTravail)
-    arcpy.Sort_management(coucheTravail, coucheTravail, [datedate_field])
+    arcpy.MakeFeatureLayer_management(gdb + "/" + couche, couche)
+    arcpy.Sort_management(couche, gdb + "/" + coucheTravail, [datedate_field])
+    arcpy.MakeFeatureLayer_management(gdb + "/" + coucheTravail, coucheTravail)
     arcpy.AddField_management(coucheTravail, "liste_overlaps", "Text")
     arcpy.AddField_management(coucheTravail, "count_overlaps", "Double")
     sCurs1 = [list(i) for i in arcpy.da.SearchCursor(coucheTravail, champs)]
@@ -370,9 +371,5 @@ def calcul_indice_confiance(gdb, couche, datedate_field, seuil_temp, seuil_spat)
                 arcpy.AddMessage("Valeur invalide")
                 u[2] = "Invalide"
                 uCurs.updateRow(u)
-    try:
-        arcpy.CopyFeatures_management(coucheTravail, gdb + "/" + coucheTravail)
-    except :
-        arcpy.Delete_management(gdb + "/" + coucheTravail)
-        arcpy.CopyFeatures_management(coucheTravail, gdb + "/" + coucheTravail)
-        pass
+    arcpy.CopyFeatures_management(coucheTravail, gdb + "/" + coucheTravail + "_Final")
+    

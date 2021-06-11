@@ -40,7 +40,7 @@ date_groupe = arcpy.GetParameterAsText(10)
 seuil = int(arcpy.GetParameterAsText(11)) # Seuillage des incendies (défaut : 30j)
 buffer = arcpy.GetParameterAsText(12) + " meters" # Buffer (défaut : 100m)
 
-# gdb = r"C:\Users\come.daval\Documents\Sentinel_Global\Sentinel.gdb" # Nom de la gdb
+# gdb = r"C:\Users\come.daval\Documents\ArcGIS\Projects\Sentinel_20\Sentinel_20.gdb" # Nom de la gdb
 # bruts = [r"C:\Users\come.daval\Documents\Sentinel_Global\Données initiales\ShapeFiles\S2_L2A_BurnedAreas_0" + str(r) for r in range(1, 10)]
 # bruts += [r"C:\Users\come.daval\Documents\Sentinel_Global\Données initiales\ShapeFiles\S2_L2A_BurnedAreas_" + str(r) for r in range(10, 13)]
 # bruts += [r"C:\Users\come.daval\Documents\Sentinel_Global\Données initiales\ShapeFiles\S2_L2A_BurnedAreas_" + str(r) for r in range(2101, 2103)] # Liste des shps à combiner
@@ -55,7 +55,7 @@ buffer = arcpy.GetParameterAsText(12) + " meters" # Buffer (défaut : 100m)
 # date_viirs = "Fin"
 # Couche_GROUPE = r"C:\Users\come.daval\Documents\Sentinel_Global\Sentinel.gdb\SENTINEL_2019" # Nom de la couche Sentinel An-1
 # date_groupe = "MAX_BegDate"
-# seuil = 40 # Seuillage des incendies (défaut : 30j)
+# seuil = 90 # Seuillage des incendies (défaut : 30j)
 # buffer = "100 meters" # Buffer (défaut : 100m)
 
 arcpy.env.workspace = gdb
@@ -85,6 +85,7 @@ MinPCT = 0.00  # Minimum de pourcentage de surface en commun avec un
                 #polygone feu que doit posseder une classe. Vaut 0.00 par defaut
 MinPCTAb = 25 # Pourcentage au dessus du quel le feu est considéré comme aberrant
 seuilSurface = .6
+
 for champ, couche in zip(ListChampsDate, ListCoucheRef):
     if champ != datedate_field:
         arcpy.AddField_management(couche, datedate_field, "Date")
@@ -208,7 +209,7 @@ verification_table_rel(TableRel)
 
 arcpy.AddMessage("Fin de l'étape 1 du processus de regroupement: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-# # ------------------------------REGROUPEMENT ETAPE 2----------------------------------------
+# ------------------------------REGROUPEMENT ETAPE 2----------------------------------------
 
 arcpy.AddMessage("Debut du processus Etape 2: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
@@ -221,19 +222,16 @@ TableRel = Fusion_Data + "_OverlapsALL" + str(seuil) + "j"
 arcpy.AddMessage("Traitement pour le seuil " + str(seuil) + " jours")
 arcpy.AddMessage("Recuperation des informations de la Table de proximite " + TableRel + ": " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-
 Relations, Sent, Viirs, D, GS = creation_dico(gdb, TableRel, ChampTableRel)
 
 '''CHANGEMENT ORDRE REFERENCE DSCGR puis VIIRS puis Groupe Incendie An-1'''
 arcpy.AddMessage("Classification selon DSCGR: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-RefD = RefSentinel(D, Sent, Relations, seuil)
+RefD = RefSentinel(D, Sent, Relations, "D", seuil)
 dicoD = RefD[0]
 Sent = RefD[1]
 
 arcpy.AddMessage("Classification secondaire selon DSCGR: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-
-
 
 Sent, dicoD, dicoSD = calcul_groups(seuil, Relations, Sent, dicoD)
 
@@ -260,8 +258,9 @@ if len(Sent) > 0:
     # Classement Sentinels restant dans l'ordre croissant
     Sent = OrdonnerSentinel(Sent, Relations)
     ###########################################
-    file = open("test_regroupement_sent", 'wb')
-    pickle.dump([Sent, Relations, seuil], file)
+    # file = open("test_regroupement_sent", 'wb')
+    # pickle.dump([Sent, Relations, seuil], file)
+    # file.close()
     ###########################################
     dicoSent = ClasseOnlySentinel(Sent, Relations, seuil)
     arcpy.AddMessage(str(len(Sent)) + " Sentinels a classer")

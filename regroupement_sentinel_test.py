@@ -125,8 +125,8 @@ def ClasseOnlySentinelV2(Sentinels, Rels, Seuil):
 
 file = open("test_regroupement_sent", 'rb')
 [Sent, Relations, seuil] = pickle.load(file)
-
-test1 = ClasseOnlySentinel(Sent, Relations, seuil)
-test2 = ClasseOnlySentinelV2(Sent, Relations, seuil)
+file.close()
+test1 = ClasseOnlySentinel(Sent[:10000], Relations, seuil)
+test2 = ClasseOnlySentinelV2(Sent[:10000], Relations, seuil)
 
 print(test1 == test2)
