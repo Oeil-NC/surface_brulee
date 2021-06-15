@@ -39,9 +39,13 @@ def RegroupementSentinelV2(snt, SNT, Rels):
             # On ajoute les feux enfants à la liste à retourner
             if feu_enfant not in sentinel_groupee:
                 sentinel_groupee.append(feu_enfant)
-            SNT.remove(feu_enfant)
+            try:
+                SNT.remove(feu_enfant)
+            except ValueError:
+                print(feu_enfant + " n'est pas dans SNT")
             # On récupère les relations du feu enfant ne concernant pas les feux déjà remontés
             liste_petits_enfants = get_relation_sentinel(feu_enfant, Rels, liste_ref)
+            liste_petits_enfants = [l for l in liste_petits_enfants if l in SNT]
             # On ajoute au bout les nouvelles relations trouvées
             liste_ref.extend(liste_petits_enfants)
     return [SNT, sentinel_groupee]
@@ -126,7 +130,7 @@ def ClasseOnlySentinelV2(Sentinels, Rels, Seuil):
 file = open("test_regroupement_sent", 'rb')
 [Sent, Relations, seuil] = pickle.load(file)
 file.close()
-test1 = ClasseOnlySentinel(Sent[:10000], Relations, seuil)
-test2 = ClasseOnlySentinelV2(Sent[:10000], Relations, seuil)
+test1 = ClasseOnlySentinel(Sent[:1000], Relations, seuil)
+test2 = ClasseOnlySentinelV2(Sent[:1000], Relations, seuil)
 
 print(test1 == test2)

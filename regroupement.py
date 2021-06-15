@@ -1,9 +1,8 @@
 import arcpy
 from methodes import *
 
-def creation_table_relation(gdb, seuil, buffer, datedate_field, CoucheTOT, CoucheTOT_Buffer, TableRel, SortedCoucheTOT, ChampCoucheTOT, ChampTableRel):
-    arcpy.Delete_management(CoucheTOT_Buffer)
-    arcpy.Buffer_analysis(CoucheTOT, CoucheTOT_Buffer, buffer)
+def creation_table_relation(gdb, seuil, datedate_field, CoucheTOT_Buffer, TableRel, SortedCoucheTOT, ChampCoucheTOT, ChampTableRel):
+    # arcpy.Delete_management(CoucheTOT_Buffer)
 
     #########TRAITEMENT DES DONNEES#########
     arcpy.AddMessage("Traitement pour creer une table de relation complete SANS SEUIL")
@@ -35,7 +34,7 @@ def creation_table_relation(gdb, seuil, buffer, datedate_field, CoucheTOT, Couch
     SGeom2 = [sg1 for sg1 in SGeom]
     SGeom2.pop(0)
     SGeom.pop()
-
+    # Rappel : ChampCoucheTOT = [0:"Num_S", 1:"Nature", 2:date_field_fin, 3:"Shape@", 4:"OBJECTID", 5:date_field_dbt]
     arcpy.AddMessage("Taille des données à traiter : {} entitées".format(len(SGeom)))
     for sgi, sg in enumerate(SGeom):
         date_sg = sg[2]
@@ -48,21 +47,25 @@ def creation_table_relation(gdb, seuil, buffer, datedate_field, CoucheTOT, Couch
             if sg[3].overlaps(sg2[3]):
                 if sg[1] == 'S' and sg2[1] == 'S':
                     Delta = abs((date_sg-date_sg2).days)
-                    if date_sg < date_sg2:
+                    if date_sg <= date_sg2:
                         iCurs = arcpy.da.InsertCursor(TableRel, ChampTableRel)
                         iCurs.insertRow([sg[0], sg[1], date_sg, sg2[0], sg2[1], date_sg2, sg[1] + "2 - " + sg2[1] + "1", Delta])
                         del iCurs
                     else:
+                        print("Yayo pas possible")
                         iCurs = arcpy.da.InsertCursor(TableRel, ChampTableRel)
                         iCurs.insertRow([sg[0], sg[1], date_sg, sg2[0], sg2[1], date_sg2, sg[1] + "1 - " + sg2[1] + "2", Delta])
                         del iCurs
 
                 elif sg[1] == 'S':
-                    Delta = (date_sg - date_sg2).days
-                    if Delta >= 0:
-                        iCurs = arcpy.da.InsertCursor(TableRel, ChampTableRel)
-                        iCurs.insertRow([sg[0], sg[1], date_sg, sg2[0], sg2[1], date_sg2, sg[1] + " - " + sg2[1], Delta])
-                        del iCurs
+                    date_sg2_dbt = sg2[5]
+                    if date_sg >= date_sg2_dbt:
+                        if date_sg <= date_sg2 + seuil:
+                            # Faux delta qui permet de passer les tests suivants puisque le feu est considéré comme valide 
+                            Delta = seuil - 1
+                            iCurs = arcpy.da.InsertCursor(TableRel, ChampTableRel)
+                            iCurs.insertRow([sg[0], sg[1], date_sg, sg2[0], sg2[1], date_sg2, sg[1] + " - " + sg2[1], Delta])
+                            del iCurs
 
                 elif sg2[1] == 'S':
                     Delta = (date_sg2 - date_sg).days

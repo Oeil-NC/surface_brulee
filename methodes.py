@@ -104,7 +104,7 @@ def RefSentinel(VIIRS, Sentinels, Rels, CodeRef, Seuil):
                         dicoREF[oldViirs].remove(vsr[3])
                         SentinelsTraites[vsr[3]] = [v,vsr[7]]
                         dicoREF[v].append(vsr[3])
-        SVR = [rel for rel in Rels if rel[6] == "S - " + CodeRef and rel[3] == v and rel[7] <= Seuil and rel[7] >= 0]
+        SVR = [rel for rel in Rels if rel[6] == "S - " + CodeRef and rel[3] == v and rel[7] <= Seuil]
         if len(SVR) > 0:
             for svr in SVR:
                 if svr[0] in SentinelsNonTraites:
@@ -373,3 +373,20 @@ def calcul_indice_confiance(gdb, couche, datedate_field, seuil_temp, seuil_spat)
                 uCurs.updateRow(u)
     arcpy.CopyFeatures_management(coucheTravail, gdb + "/" + coucheTravail + "_Final")
     
+def nettoyage_fusion_data(couche, ChampIDFusion, NumS, fields, dbt_etude):
+    liste_id_fusion = [list(l) for l in arcpy.da.SearchCursor(couche, fields, where_clause=ChampIDFusion + " = " + NumS)]
+    liste_a_supp = []
+    for feu_ref in liste_id_fusion:
+        if feu_ref[2] < dbt_etude:
+            liste_a_supp.append(feu_ref[0])
+    try:
+        arcpy.AddField_management(couche, "A_SUPPRIMER", "TEXT", field_length=255)
+    except:
+        arcpy.DeleteField_management(couche, "A_SUPPRIMER")
+        arcpy.AddField_management(couche, "A_SUPPRIMER", "TEXT", field_length=255)
+    fields.append("A_SUPPRIMER")
+    uCurs = arcpy.da.UpdateCursor(couche, fields)
+    for u in uCurs:
+        if u[0] in liste_a_supp:
+            u[3] = "A SUPPRIMER"
+            uCurs.updateRow(u)
