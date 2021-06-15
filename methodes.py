@@ -180,9 +180,9 @@ def SentinelSecondaire(dicoRef, Rels, seuil, SNT):
 ###Regroupement des sentinels entre eux
 '''Liste des Sentinels Traites
 chaque sentinel non traite dans Sentinel Non Traites
-Relations1 = Toutes les relations liees au sentinel concern� en premier element S1 - S2
+Relations1 = Toutes les relations liees au sentinel concerné en premier element S1 - S2
 On recupere les autres sentinels lies au sentinel concerne sur Relations1
-Relations2 = Toutes les reations liees au sentinel concern� en second element S1 - S2
+Relations2 = Toutes les reations liees au sentinel concerné en second element S1 - S2
 On recupere les autres sentinels lies au sentinel concerne sur Relations2
 SentinelsLies = On mixte tous les sentinels liées au sentinel concerne
 On verifie que dans SentinelsLies il n'y a pas le sentinel concerne
@@ -195,9 +195,9 @@ Retour des Sentinels Non traites en 0 et Sentinels Traites en 1
 def get_relation_sentinel(snt, Rels, ST=None):
     if ST == None:
         ST = list(snt)
-    Rel1 = [sr for sr in Rels if sr[0] == snt and sr[4] >= sr[1]]  # On récupère les relation du sentinel avec d'autre sentinel sens 1
+    Rel1 = [sr for sr in Rels if sr[0] == snt and sr[4] == sr[1]]  # On récupère les relation du sentinel avec d'autre sentinel sens 1
     slies1 = [r1[3] for r1 in Rel1]  # Liste des idSentinel liés
-    Rel2 = [sr for sr in Rels if sr[3] == snt and sr[1] >= sr[4]]  # On récupère les relation du sentinel avec d'autre sentinel sens 2
+    Rel2 = [sr for sr in Rels if sr[3] == snt and sr[1] == sr[4]]  # On récupère les relation du sentinel avec d'autre sentinel sens 2
     slies2 = [r2[0] for r2 in Rel2]  # -
     slies = list()
     slies.extend(slies1)
