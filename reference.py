@@ -27,6 +27,8 @@ def creation_id_feux(ListCoucheRef, ListChampsDate, l_couches, list_nature, list
             arcpy.CalculateField_management(couche, dateNewName, "datetime.datetime.strftime(!"+dateName+"!, '%Y%m%d')")
         except TypeError:
             arcpy.CalculateField_management(couche, dateNewName, "!" + dateName + "!")
+        except AttributeError:
+            arcpy.CalculateField_management(couche, dateNewName, "datetime.strftime(!"+dateName+"!, '%Y%m%d')")
 
 def creation_couche_fusionnee(datedate_field, fcSentinel, fcDSCGR, fcVIIRS, fcGS, fieldDate, Nom_sortie, where_clause, where_clause_ref, buffer):
     # Selection des polygones de l'annee d'etude (01/01/annee_etude - 31/02/annee_etude+1)

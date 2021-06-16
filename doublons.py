@@ -65,6 +65,7 @@ def supression_doublons(fcIn, gdb):
             GenererIdDoublons(DoublonsResult, chemin, ["Shape", dateFieldName], "2", f)
             GenererIdDoublons(DoublonsResult, chemin, ["Shape"], "3", f)
 
+            arcpy.Delete_management(SansDoublon)    
             arcpy.CopyFeatures_management(DoublonsResult, SansDoublon)
             arcpy.DeleteIdentical_management(SansDoublon, ["Shape", dateFieldName])
             f.write("\nNombre de polygones apres elimination des doublons => {0}".format(arcpy.GetCount_management(SansDoublon).getOutput(0)))

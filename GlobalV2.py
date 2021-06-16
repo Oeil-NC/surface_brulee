@@ -40,22 +40,22 @@ arcpy.env.parallelProcessingFactor = "90%"
 # seuil = int(arcpy.GetParameterAsText(11)) # Seuillage des incendies (défaut : 30j)
 # buffer = arcpy.GetParameterAsText(12) + " meters" # Buffer (défaut : 100m)
 
-gdb = r"C:\Users\come.daval\Documents\ArcGIS\Projects\Sentinel_20\Sentinel_20.gdb" # Nom de la gdb
-bruts = [r"C:\Users\come.daval\Documents\Sentinel_Global\Données initiales\ShapeFiles\S2_L2A_BurnedAreas_0" + str(r) for r in range(1, 10)]
-bruts += [r"C:\Users\come.daval\Documents\Sentinel_Global\Données initiales\ShapeFiles\S2_L2A_BurnedAreas_" + str(r) for r in range(10, 13)]
-bruts += [r"C:\Users\come.daval\Documents\Sentinel_Global\Données initiales\ShapeFiles\S2_L2A_BurnedAreas_" + str(r) for r in range(2101, 2103)] # Liste des shps à combiner
-for i in range(len(bruts)):
-    bruts[i] += ".shp"
+gdb = r"C:\Users\come.daval\Documents\ArcGIS\Projects\Sentinel_V1606\Sentinel_V1606.gdb" # Nom de la gdb
+bruts = [gdb + "/S2_L2A_BurnedAreas_0" + str(r) for r in range(1, 10)]
+bruts += [gdb + "/S2_L2A_BurnedAreas_" + str(r) for r in range(10, 13)]
+bruts += [gdb + "/S2_L2A_BurnedAreas_" + str(r) for r in range(2101, 2103)] # Liste des shps à combiner
+# for i in range(len(bruts)):
+#     bruts[i] += ".shp"
 annee_etude = 2020 # Annee de l'étude
 champDate = "date" # Nom du champ date
-Couche_MOS = r"C:\Users\come.daval\Documents\Sentinel_Global\Sentinel.gdb\MOS" # Nom de la couche MOS brutes
-Couche_DSCGR = r"C:\Users\come.daval\Documents\Sentinel_Global\Sentinel.gdb\DSCGR" # Nom de la couche DSCGR
+Couche_MOS = gdb + "/MOS" # Nom de la couche MOS brutes
+Couche_DSCGR = gdb + "/DSCGR" # Nom de la couche DSCGR
 date_dscgr_dbt = "date_date_dbt"
 date_dscgr_fin = "date_date_fin"
-Couche_VIIRS = r"C:\Users\come.daval\Documents\Sentinel_Global\Sentinel.gdb\VIIRS" # Nom de la couche VIIRS
+Couche_VIIRS = gdb + "/VIIRS_Complet" # Nom de la couche VIIRS
 date_viirs_dbt = "date_date_dbt"
 date_viirs_fin = "date_date_fin"
-Couche_GROUPE = r"C:\Users\come.daval\Documents\Sentinel_Global\Sentinel.gdb\SENTINEL_2019" # Nom de la couche Sentinel An-1
+Couche_GROUPE = gdb + "/Incendies2019" # Nom de la couche Sentinel An-1
 date_groupe_dbt = "MIN_BegDate"
 date_groupe_fin = "MAX_BegDate"
 seuil = 90 # Seuillage des incendies (défaut : 30j)
@@ -111,8 +111,8 @@ arcpy.Merge_management(bruts, Merged_Data)
 date_field = arcpy.ListFields(Merged_Data, champDate).pop()
 if date_field.type != "Date":
     arcpy.AddField_management(Merged_Data, "date_date", "Date")
-    # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
-    arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y%m%d')")
+    arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
+    # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y%m%d')")
 
     # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y-%m-%d')")
 
