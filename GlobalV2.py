@@ -87,7 +87,7 @@ where_clause_mos += " Or l_2014_n3 = 'Roches et sols nus'"
 where_clause_mos += " Or l_2014_n3 = 'Eaux maritimes'"
 ObjectID_Org_Layer = "OBJECTID_1" # ID de la couche d'origine du feu dans la table intersection
 MinPCT = 0.00  # Minimum de pourcentage de surface en commun avec un
-                #polygone feu que doit posseder une classe. Vaut 0.00 par defaut
+                # polygone feu que doit posseder une classe. Vaut 0.00 par defaut
 MinPCTAb = 25 # Pourcentage au dessus du quel le feu est considéré comme aberrant
 seuilSurface = .6
 
