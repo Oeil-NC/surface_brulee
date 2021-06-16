@@ -110,8 +110,8 @@ arcpy.AddMessage("Fusion et ajout d'un champ Date")
 arcpy.Merge_management(bruts, Merged_Data)
 date_field = arcpy.ListFields(Merged_Data, champDate).pop()
 if date_field.type != "Date":
-    arcpy.AddField_management(Merged_Data, "date_date", "Date")
-    arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
+    arcpy.AddField_management(Merged_Data, "date_date_fin", "Date")
+    arcpy.CalculateField_management(Merged_Data, "date_date_fin", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
     # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y%m%d')")
 
     # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y-%m-%d')")
@@ -184,11 +184,11 @@ fcGS = Couche_GROUPE
 fieldDate = "date"
 Nom_sortie = Fusion_Data  # nom de la couche en sortie
 # WoorkIngdb()
-dateDebut = str(annee_etude) + '0101'
-dateFin = str(annee_etude+1) + '0301'
-dateDebutRef = str(annee_etude-1) + '0101'
-where_clause = fieldDate + " >= '" + dateDebut + "' AND " + fieldDate + " < '" + dateFin + "'"
-where_clause_ref = fieldDate + " >= '" + dateDebutRef + "' AND " + fieldDate + " < '" + dateFin + "'"
+dateDebut = str(annee_etude) + '-01-01'
+dateFin = str(annee_etude+1) + '-03-01'
+dateDebutRef = str(annee_etude-1) + '-01-01'
+where_clause = date_field_fin + " >= timestamp '" + dateDebut + "' AND " + date_field_fin + " < timestamp '" + dateFin + "'"
+where_clause_ref = date_field_fin + " >= timestamp '" + dateDebutRef + "' AND " + date_field_fin + " < timestamp '" + dateFin + "'"
 arcpy.AddMessage(dateDebut)
 arcpy.AddMessage(dateFin)
 arcpy.AddMessage(dateDebutRef)
@@ -196,7 +196,8 @@ arcpy.AddMessage(dateDebutRef)
 arcpy.Delete_management(Fusion_Data)
 
 creation_id_feux(ListCoucheRef, ListChampsDate_fin, l_couches, list_nature, list_oid)
-creation_couche_fusionnee(date_field_fin, fcSentinel, fcDSCGR, fcVIIRS, fcGS, fieldDate, Nom_sortie, where_clause, where_clause_ref, buffer)
+creation_couche_fusionnee([date_field_dbt, date_field_fin], fcSentinel, fcDSCGR, fcVIIRS,\
+    fcGS, Nom_sortie, where_clause, where_clause_ref, buffer)
 
 # # ------------------------------REGROUPEMENT ETAPE 1----------------------------------------
 
