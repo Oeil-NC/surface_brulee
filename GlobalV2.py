@@ -193,41 +193,41 @@ arcpy.AddMessage(dateDebut)
 arcpy.AddMessage(dateFin)
 arcpy.AddMessage(dateDebutRef)
 
-arcpy.Delete_management(Fusion_Data)
-arcpy.Delete_management(Fusion_Data + "_Buffer")
+# arcpy.Delete_management(Fusion_Data)
+# arcpy.Delete_management(Fusion_Data + "_Buffer")
 
-creation_id_feux(ListCoucheRef, ListChampsDate_fin, l_couches, list_nature, list_oid)
-creation_couche_fusionnee([date_field_dbt, date_field_fin], fcSentinel, fcDSCGR, fcVIIRS,\
-    fcGS, Nom_sortie, where_clause, where_clause_ref, buffer)
+# creation_id_feux(ListCoucheRef, ListChampsDate_fin, l_couches, list_nature, list_oid)
+# creation_couche_fusionnee([date_field_dbt, date_field_fin], fcSentinel, fcDSCGR, fcVIIRS,\
+#     fcGS, Nom_sortie, where_clause, where_clause_ref, buffer)
 
-# # ------------------------------REGROUPEMENT ETAPE 1----------------------------------------
+# # # ------------------------------REGROUPEMENT ETAPE 1----------------------------------------
 
-arcpy.AddMessage("Debut du processus Regroupement : " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+# arcpy.AddMessage("Debut du processus Regroupement : " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-CoucheTOT = Fusion_Data
-CoucheTOT_Buffer = CoucheTOT + "_Buffer"
-TableRel = CoucheTOT + "_OverlapsALL" + str(seuil) + "j"
-SortedCoucheTOT = CoucheTOT + "_Sorted"
-# ChampCoucheTOT = ["Num_S", "Nature", date_field_fin, "Shape@", "OBJECTID", "count_overlaps"]
-ChampCoucheTOT = ["Num_S", "Nature", date_field_fin, "Shape@", "OBJECTID", date_field_dbt]
-ChampTableRel = ["Num_S", "Nature", date_field_fin, "Num_S_1", "Nature_1", date_field_fin + "_1", "RelationNature", "Delta"]
-ChampIDSentinel = "Num_S"
+# CoucheTOT = Fusion_Data
+# CoucheTOT_Buffer = CoucheTOT + "_Buffer"
+# TableRel = CoucheTOT + "_OverlapsALL" + str(seuil) + "j"
+# SortedCoucheTOT = CoucheTOT + "_Sorted"
+# # ChampCoucheTOT = ["Num_S", "Nature", date_field_fin, "Shape@", "OBJECTID", "count_overlaps"]
+# ChampCoucheTOT = ["Num_S", "Nature", date_field_fin, "Shape@", "OBJECTID", date_field_dbt]
+# ChampTableRel = ["Num_S", "Nature", date_field_fin, "Num_S_1", "Nature_1", date_field_fin + "_1", "RelationNature", "Delta"]
+# ChampIDSentinel = "Num_S"
 
-creation_table_relation(gdb, seuil, date_field_fin, CoucheTOT_Buffer, TableRel, SortedCoucheTOT, ChampCoucheTOT, ChampTableRel)
+# creation_table_relation(gdb, seuil, date_field_fin, CoucheTOT_Buffer, TableRel, SortedCoucheTOT, ChampCoucheTOT, ChampTableRel)
 
-arcpy.AddMessage("Recuperation des informations de la Table de proximite " + TableRel + ": " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+# arcpy.AddMessage("Recuperation des informations de la Table de proximite " + TableRel + ": " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-verification_table_rel(TableRel)
-arcpy.Delete_management(CoucheTOT_Buffer)
-arcpy.Delete_management(SortedCoucheTOT)
-arcpy.AddMessage("Fin de l'étape 1 du processus de regroupement: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+# verification_table_rel(TableRel)
+# arcpy.Delete_management(CoucheTOT_Buffer)
+# arcpy.Delete_management(SortedCoucheTOT)
+# arcpy.AddMessage("Fin de l'étape 1 du processus de regroupement: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
 # ------------------------------REGROUPEMENT ETAPE 2----------------------------------------
 
 arcpy.AddMessage("Debut du processus Etape 2: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
 Couche = Fusion_Data
-ChampTableRel = ["Num_S", "Nature", "date_date", "Num_S_1", "Nature_1", "date_date_1", "RelationNature", "Delta"]
+ChampTableRel = ["Num_S", "Nature", date_field_fin, "Num_S_1", "Nature_1", date_field_fin + "_1", "RelationNature", "Delta"]
 ChampIDSentinel = "Num_S"
 ChampIDFusion = "ID_Fusion_" + str(seuil) + "j"
 TableRel = Fusion_Data + "_OverlapsALL" + str(seuil) + "j"
