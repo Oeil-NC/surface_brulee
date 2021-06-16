@@ -60,7 +60,7 @@ def creation_table_relation(gdb, seuil, datedate_field, CoucheTOT_Buffer, TableR
                 elif sg[1] == 'S':
                     date_sg2_dbt = sg2[5]
                     if date_sg >= date_sg2_dbt:
-                        if date_sg <= date_sg2 + seuil:
+                        if date_sg <= date_sg2 + dt.timedelta(seuil):
                             # Faux delta qui permet de passer les tests suivants puisque le feu est considéré comme valide 
                             Delta = seuil - 1
                             iCurs = arcpy.da.InsertCursor(TableRel, ChampTableRel)

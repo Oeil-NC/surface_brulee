@@ -38,7 +38,7 @@ def creation_couche_fusionnee(datedate_field, fcSentinel, fcDSCGR, fcVIIRS, fcGS
     arcpy.MakeFeatureLayer_management(fcDSCGR, "coucheDSCGR", where_clause=where_clause_ref)
     arcpy.MakeFeatureLayer_management(fcVIIRS, "coucheVIIRS", where_clause=where_clause_ref)
     arcpy.MakeFeatureLayer_management(fcGS, "coucheGS", where_clause=where_clause_ref)
-    
+    arcpy.Delete_management("coucheSentinel_Buffer")
     # Fusion des tables
     arcpy.Merge_management(["coucheSentinel", "coucheDSCGR", "coucheVIIRS", "coucheGS"],
                         arcpy.env.workspace + os.sep + Nom_sortie)

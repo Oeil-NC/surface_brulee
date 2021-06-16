@@ -97,78 +97,78 @@ for champ, couche in zip(ListChampsDate_fin, ListCoucheRef):
         arcpy.CalculateField_management(couche, date_field_fin, "!" + champ + "!")
 
 for champ, couche in zip(ListChampsDate_dbt, ListCoucheRef):
-    if champ != date_field_fin:
-        arcpy.AddField_management(couche, date_field_fin, "Date")
-        arcpy.CalculateField_management(couche, date_field_fin, "!" + champ + "!")
+    if champ != date_field_dbt:
+        arcpy.AddField_management(couche, date_field_dbt, "Date")
+        arcpy.CalculateField_management(couche, date_field_dbt, "!" + champ + "!")
 
-# # ------------------------------DELETE----------------------------------------
-arcpy.Delete_management("Merged_Data")
-arcpy.Delete_management(checkGeomResult)
+# # # ------------------------------DELETE----------------------------------------
+# arcpy.Delete_management("Merged_Data")
+# arcpy.Delete_management(checkGeomResult)
 
-# --------------------Fusion et ajout d'un champ Date-------------------------
-arcpy.AddMessage("Fusion et ajout d'un champ Date")
-arcpy.Merge_management(bruts, Merged_Data)
-date_field = arcpy.ListFields(Merged_Data, champDate).pop()
-if date_field.type != "Date":
-    arcpy.AddField_management(Merged_Data, "date_date_fin", "Date")
-    arcpy.CalculateField_management(Merged_Data, "date_date_fin", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
-    # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y%m%d')")
+# # --------------------Fusion et ajout d'un champ Date-------------------------
+# arcpy.AddMessage("Fusion et ajout d'un champ Date")
+# arcpy.Merge_management(bruts, Merged_Data)
+# date_field = arcpy.ListFields(Merged_Data, champDate).pop()
+# if date_field.type != "Date":
+#     arcpy.AddField_management(Merged_Data, "date_date_fin", "Date")
+#     arcpy.CalculateField_management(Merged_Data, "date_date_fin", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
+#     # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y%m%d')")
 
-    # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y-%m-%d')")
+#     # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y-%m-%d')")
 
-arcpy.AddMessage("Done !")
+# arcpy.AddMessage("Done !")
 
-# ------------------------------Réparation des géométries----------------------------------------
-fcIn = Merged_Data
-arcpy.RepairGeometry_management(fcIn, True)
+# # ------------------------------Réparation des géométries----------------------------------------
+# fcIn = Merged_Data
+# arcpy.RepairGeometry_management(fcIn, True)
 
-# ------------------------------Vérification des géométries--------------------------------------
-fcIn = Merged_Data
-arcpy.CheckGeometry_management(fcIn, checkGeomResult)
-nbPbGeom = int(arcpy.GetCount_management(checkGeomResult)[0])
-arcpy.AddMessage("{} problème de géométrie restant à traiter".format(nbPbGeom))
-if int(nbPbGeom) > 0:
-    arcpy.AddMessage("Erreur de géométrie")
-    sys.exit()
+# # ------------------------------Vérification des géométries--------------------------------------
+# fcIn = Merged_Data
+# arcpy.CheckGeometry_management(fcIn, checkGeomResult)
+# nbPbGeom = int(arcpy.GetCount_management(checkGeomResult)[0])
+# arcpy.AddMessage("{} problème de géométrie restant à traiter".format(nbPbGeom))
+# if int(nbPbGeom) > 0:
+#     arcpy.AddMessage("Erreur de géométrie")
+#     sys.exit()
 
-# # ------------------------------Doublons----------------------------------------
+# # # ------------------------------Doublons----------------------------------------
 
-fcIn = Merged_Data
-supression_doublons(fcIn, gdb)
+# fcIn = Merged_Data
+# supression_doublons(fcIn, gdb)
 
-# # ------------------------------Aberrations MOS----------------------------------------
-# Extraction des catégories MOS utilisées
-arcpy.Delete_management(Couche_MOS_Select)
-arcpy.Delete_management(Merged_Data_Inter_MOS)
-arcpy.Delete_management(Merged_Data_SS_Ab)
-arcpy.Select_analysis(Couche_MOS, Couche_MOS_Select, where_clause_mos)
-arcpy.TabulateIntersection_analysis(Merged_Data_SS_Doublons, "OBJECTID", Couche_MOS_Select, Merged_Data_Inter_MOS, champ_cat_mos, out_units= "HECTARES",)
+# # # ------------------------------Aberrations MOS----------------------------------------
+# # Extraction des catégories MOS utilisées
+# arcpy.Delete_management(Couche_MOS_Select)
+# arcpy.Delete_management(Merged_Data_Inter_MOS)
+# arcpy.Delete_management(Merged_Data_SS_Ab)
+# arcpy.Select_analysis(Couche_MOS, Couche_MOS_Select, where_clause_mos)
+# arcpy.TabulateIntersection_analysis(Merged_Data_SS_Doublons, "OBJECTID", Couche_MOS_Select, Merged_Data_Inter_MOS, champ_cat_mos, out_units= "HECTARES",)
 
-# Recuperation des entrees
-Layer1 = Merged_Data_SS_Doublons
-Tb_Intersect = Merged_Data_Inter_MOS
-FieldOIDLayer1 = ObjectID_Org_Layer  
-FieldClasse = champ_cat_mos
+# # Recuperation des entrees
+# Layer1 = Merged_Data_SS_Doublons
+# Tb_Intersect = Merged_Data_Inter_MOS
+# FieldOIDLayer1 = ObjectID_Org_Layer  
+# FieldClasse = champ_cat_mos
 
-detection_surface_ab_mos(gdb, Tb_Intersect, Layer1, FieldOIDLayer1, FieldClasse, MinPCT, MinPCTAb)
+# detection_surface_ab_mos(gdb, Tb_Intersect, Layer1, FieldOIDLayer1, FieldClasse, MinPCT, MinPCTAb)
 
-arcpy.Delete_management(Couche_MOS_Select)
-# # -----------------------------Indice de confiance--------------------------------
-# arcpy.AddMessage("Debut du processus Indice de confiance : " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+# arcpy.Delete_management(Couche_MOS_Select)
+# # # -----------------------------Indice de confiance--------------------------------
+# # arcpy.AddMessage("Debut du processus Indice de confiance : " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-# couche_ss_ab = Merged_Data_SS_Ab
-# coucheTravail = "Merged_Data_Trust"
-# champs = ["OBJECTID", "Shape@", "liste_overlaps", "count_overlaps", "date_date"]
-# arcpy.Delete_management(gdb + "/" + coucheTravail)
-# arcpy.Delete_management(coucheTravail)
-# arcpy.MakeFeatureLayer_management(gdb + "/" + couche_ss_ab, coucheTravail)
-# arcpy.Sort_management(coucheTravail, coucheTravail, [date_field_fin])
-# arcpy.AddField_management(coucheTravail, "liste_overlaps", "Text")
-# arcpy.AddField_management(coucheTravail, "count_overlaps", "Double")
+# # couche_ss_ab = Merged_Data_SS_Ab
+# # coucheTravail = "Merged_Data_Trust"
+# # champs = ["OBJECTID", "Shape@", "liste_overlaps", "count_overlaps", "date_date"]
+# # arcpy.Delete_management(gdb + "/" + coucheTravail)
+# # arcpy.Delete_management(coucheTravail)
+# # arcpy.MakeFeatureLayer_management(gdb + "/" + couche_ss_ab, coucheTravail)
+# # arcpy.Sort_management(coucheTravail, coucheTravail, [date_field_fin])
+# # arcpy.AddField_management(coucheTravail, "liste_overlaps", "Text")
+# # arcpy.AddField_management(coucheTravail, "count_overlaps", "Double")
 
-# calcul_overlaps(gdb, seuil, seuilSurface, coucheTravail, champs)
+# # calcul_overlaps(gdb, seuil, seuilSurface, coucheTravail, champs)
 
-# # ------------------------------Références----------------------------------------
+# # # ------------------------------Références----------------------------------------
 arcpy.AddMessage("Debut du processus d'ajout des références : " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 # Ajout des références
 l_couches = [Merged_Data_SS_Ab, Couche_DSCGR, Couche_VIIRS, Couche_GROUPE]
@@ -194,6 +194,7 @@ arcpy.AddMessage(dateFin)
 arcpy.AddMessage(dateDebutRef)
 
 arcpy.Delete_management(Fusion_Data)
+arcpy.Delete_management(Fusion_Data + "_Buffer")
 
 creation_id_feux(ListCoucheRef, ListChampsDate_fin, l_couches, list_nature, list_oid)
 creation_couche_fusionnee([date_field_dbt, date_field_fin], fcSentinel, fcDSCGR, fcVIIRS,\
