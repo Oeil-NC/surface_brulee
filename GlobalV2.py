@@ -316,7 +316,7 @@ for u in uCurs:
 del uCurs
 
 NumS = "Num_S"
-fields = [ChampIDFusion, NumS, date_field_fin]
+fields = [ChampIDFusion, NumS, date_field_fin, date_dscgr_dbt]
 dbt_etude = dt.datetime(annee_etude, 1, 1)
 
 arcpy.MakeFeatureLayer_management(gdb + "/" + Couche, Couche)

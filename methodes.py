@@ -377,8 +377,12 @@ def nettoyage_fusion_data(couche, ChampIDFusion, NumS, fields, dbt_etude):
     liste_id_fusion = [list(l) for l in arcpy.da.SearchCursor(couche, fields, where_clause=ChampIDFusion + " = " + NumS)]
     liste_a_supp = []
     for feu_ref in liste_id_fusion:
-        if feu_ref[2] < dbt_etude:
-            liste_a_supp.append(feu_ref[0])
+        try:
+            if feu_ref[3] < dbt_etude:
+                liste_a_supp.append(feu_ref[0])
+        except:
+            if feu_ref[2] < dbt_etude:
+                liste_a_supp.append(feu_ref[0])
     try:
         arcpy.AddField_management(couche, "A_SUPPRIMER", "TEXT", field_length=255)
     except:
