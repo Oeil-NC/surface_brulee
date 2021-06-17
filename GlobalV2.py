@@ -341,4 +341,3 @@ arcpy.Delete_management(Couche)
 
 ######
 ######
-# Vérifier buffer sur sentinel n uniquement
