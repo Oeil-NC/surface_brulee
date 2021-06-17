@@ -107,57 +107,58 @@ for champ, couche in zip(ListChampsDate_dbt, ListCoucheRef):
         arcpy.CalculateField_management(couche, date_field_dbt, "!" + champ + "!")
 
 # # # ------------------------------DELETE----------------------------------------
-# arcpy.Delete_management("Merged_Data")
-# arcpy.Delete_management(checkGeomResult)
+arcpy.Delete_management("Merged_Data")
+arcpy.Delete_management(checkGeomResult)
 
-# # --------------------Fusion et ajout d'un champ Date-------------------------
-# arcpy.AddMessage("Fusion et ajout d'un champ Date")
-# arcpy.Merge_management(bruts, Merged_Data)
-# date_field = arcpy.ListFields(Merged_Data, champDate).pop()
-# if date_field.type != "Date":
-#     arcpy.AddField_management(Merged_Data, "date_date_fin", "Date")
-#     arcpy.CalculateField_management(Merged_Data, "date_date_fin", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
-#     # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y%m%d')")
+# --------------------Fusion et ajout d'un champ Date-------------------------
+arcpy.AddMessage("Fusion et ajout d'un champ Date")
+arcpy.Merge_management(bruts, Merged_Data)
+date_field = arcpy.ListFields(Merged_Data, champDate).pop()
+if date_field.type != "Date":
+    arcpy.AddField_management(Merged_Data, "date_date_fin", "Date")
+    arcpy.CalculateField_management(Merged_Data, "date_date_fin", "datetime.strptime(!"+champDate+"!, '%Y%m%d')")
+    # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y%m%d')")
 
-#     # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y-%m-%d')")
+    # arcpy.CalculateField_management(Merged_Data, "date_date", "datetime.datetime.strptime(!"+champDate+"!, '%Y-%m-%d')")
 
-# arcpy.AddMessage("Done !")
+arcpy.AddMessage("Done !")
 
-# # ------------------------------Réparation des géométries----------------------------------------
-# fcIn = Merged_Data
-# arcpy.RepairGeometry_management(fcIn, True)
+# ------------------------------Réparation des géométries----------------------------------------
+fcIn = Merged_Data
+arcpy.RepairGeometry_management(fcIn, True)
 
-# # ------------------------------Vérification des géométries--------------------------------------
-# fcIn = Merged_Data
-# arcpy.CheckGeometry_management(fcIn, checkGeomResult)
-# nbPbGeom = int(arcpy.GetCount_management(checkGeomResult)[0])
-# arcpy.AddMessage("{} problème de géométrie restant à traiter".format(nbPbGeom))
-# if int(nbPbGeom) > 0:
-#     arcpy.AddMessage("Erreur de géométrie")
-#     sys.exit()
+# ------------------------------Vérification des géométries--------------------------------------
+fcIn = Merged_Data
+arcpy.CheckGeometry_management(fcIn, checkGeomResult)
+nbPbGeom = int(arcpy.GetCount_management(checkGeomResult)[0])
+arcpy.AddMessage("{} problème de géométrie restant à traiter".format(nbPbGeom))
+if int(nbPbGeom) > 0:
+    arcpy.AddMessage("Erreur de géométrie")
+    sys.exit()
 
-# # # ------------------------------Doublons----------------------------------------
+# # ------------------------------Doublons----------------------------------------
 
-# fcIn = Merged_Data
-# supression_doublons(fcIn, gdb)
+fcIn = Merged_Data
+supression_doublons(fcIn, gdb)
 
-# # # ------------------------------Aberrations MOS----------------------------------------
-# # Extraction des catégories MOS utilisées
-# arcpy.Delete_management(Couche_MOS_Select)
-# arcpy.Delete_management(Merged_Data_Inter_MOS)
-# arcpy.Delete_management(Merged_Data_SS_Ab)
-# arcpy.Select_analysis(Couche_MOS, Couche_MOS_Select, where_clause_mos)
-# arcpy.TabulateIntersection_analysis(Merged_Data_SS_Doublons, "OBJECTID", Couche_MOS_Select, Merged_Data_Inter_MOS, champ_cat_mos, out_units= "HECTARES",)
+# # ------------------------------Aberrations MOS----------------------------------------
+# Extraction des catégories MOS utilisées
+arcpy.Delete_management(Couche_MOS_Select)
+arcpy.Delete_management(Merged_Data_Inter_MOS)
+arcpy.Delete_management(Merged_Data_SS_Ab)
+arcpy.Select_analysis(Couche_MOS, Couche_MOS_Select, where_clause_mos)
+arcpy.TabulateIntersection_analysis(Merged_Data_SS_Doublons, "OBJECTID", Couche_MOS_Select, Merged_Data_Inter_MOS, champ_cat_mos, out_units= "HECTARES",)
 
-# # Recuperation des entrees
-# Layer1 = Merged_Data_SS_Doublons
-# Tb_Intersect = Merged_Data_Inter_MOS
-# FieldOIDLayer1 = ObjectID_Org_Layer  
-# FieldClasse = champ_cat_mos
+# Recuperation des entrees
+Layer1 = Merged_Data_SS_Doublons
+Tb_Intersect = Merged_Data_Inter_MOS
+FieldOIDLayer1 = ObjectID_Org_Layer  
+FieldClasse = champ_cat_mos
 
-# detection_surface_ab_mos(gdb, Tb_Intersect, Layer1, FieldOIDLayer1, FieldClasse, MinPCT, MinPCTAb)
+detection_surface_ab_mos(gdb, Tb_Intersect, Layer1, FieldOIDLayer1, FieldClasse, MinPCT, MinPCTAb)
 
-# arcpy.Delete_management(Couche_MOS_Select)
+arcpy.Delete_management(Couche_MOS_Select)
+
 # # # -----------------------------Indice de confiance--------------------------------
 # # arcpy.AddMessage("Debut du processus Indice de confiance : " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
@@ -198,34 +199,34 @@ arcpy.AddMessage(dateDebut)
 arcpy.AddMessage(dateFin)
 arcpy.AddMessage(dateDebutRef)
 
-# arcpy.Delete_management(Fusion_Data)
-# arcpy.Delete_management(Fusion_Data + "_Buffer")
+arcpy.Delete_management(Fusion_Data)
+arcpy.Delete_management(Fusion_Data + "_Buffer")
 
-# creation_id_feux(ListCoucheRef, ListChampsDate_fin, l_couches, list_nature, list_oid)
-# creation_couche_fusionnee([date_field_dbt, date_field_fin], fcSentinel, fcDSCGR, fcVIIRS,\
-#     fcGS, Nom_sortie, where_clause, where_clause_ref, buffer)
+creation_id_feux(ListCoucheRef, ListChampsDate_fin, l_couches, list_nature, list_oid)
+creation_couche_fusionnee([date_field_dbt, date_field_fin], fcSentinel, fcDSCGR, fcVIIRS,\
+    fcGS, Nom_sortie, where_clause, where_clause_ref, buffer)
 
 # # # ------------------------------REGROUPEMENT ETAPE 1----------------------------------------
 
-# arcpy.AddMessage("Debut du processus Regroupement : " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+arcpy.AddMessage("Debut du processus Regroupement : " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-# CoucheTOT = Fusion_Data
-# CoucheTOT_Buffer = CoucheTOT + "_Buffer"
-# TableRel = CoucheTOT + "_OverlapsALL" + str(seuil) + "j"
-# SortedCoucheTOT = CoucheTOT + "_Sorted"
-# # ChampCoucheTOT = ["Num_S", "Nature", date_field_fin, "Shape@", "OBJECTID", "count_overlaps"]
-# ChampCoucheTOT = ["Num_S", "Nature", date_field_fin, "Shape@", "OBJECTID", date_field_dbt]
-# ChampTableRel = ["Num_S", "Nature", date_field_fin, "Num_S_1", "Nature_1", date_field_fin + "_1", "RelationNature", "Delta"]
-# ChampIDSentinel = "Num_S"
+CoucheTOT = Fusion_Data
+CoucheTOT_Buffer = CoucheTOT + "_Buffer"
+TableRel = CoucheTOT + "_OverlapsALL" + str(seuil) + "j"
+SortedCoucheTOT = CoucheTOT + "_Sorted"
+# ChampCoucheTOT = ["Num_S", "Nature", date_field_fin, "Shape@", "OBJECTID", "count_overlaps"]
+ChampCoucheTOT = ["Num_S", "Nature", date_field_fin, "Shape@", "OBJECTID", date_field_dbt]
+ChampTableRel = ["Num_S", "Nature", date_field_fin, "Num_S_1", "Nature_1", date_field_fin + "_1", "RelationNature", "Delta"]
+ChampIDSentinel = "Num_S"
 
-# creation_table_relation(gdb, seuil, date_field_fin, CoucheTOT_Buffer, TableRel, SortedCoucheTOT, ChampCoucheTOT, ChampTableRel)
+creation_table_relation(gdb, seuil, date_field_fin, CoucheTOT_Buffer, TableRel, SortedCoucheTOT, ChampCoucheTOT, ChampTableRel)
 
-# arcpy.AddMessage("Recuperation des informations de la Table de proximite " + TableRel + ": " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+arcpy.AddMessage("Recuperation des informations de la Table de proximite " + TableRel + ": " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
-# verification_table_rel(TableRel)
-# arcpy.Delete_management(CoucheTOT_Buffer)
-# arcpy.Delete_management(SortedCoucheTOT)
-# arcpy.AddMessage("Fin de l'étape 1 du processus de regroupement: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+verification_table_rel(TableRel)
+arcpy.Delete_management(CoucheTOT_Buffer)
+arcpy.Delete_management(SortedCoucheTOT)
+arcpy.AddMessage("Fin de l'étape 1 du processus de regroupement: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
 # ------------------------------REGROUPEMENT ETAPE 2----------------------------------------
 
@@ -316,17 +317,22 @@ for u in uCurs:
 del uCurs
 
 NumS = "Num_S"
-fields = [ChampIDFusion, NumS, date_field_fin, date_dscgr_dbt]
+fields = [ChampIDFusion, NumS, date_field_fin, date_field_dbt]
 dbt_etude = dt.datetime(annee_etude, 1, 1)
 
-arcpy.MakeFeatureLayer_management(gdb + "/" + Couche, Couche)
+try:
+    arcpy.MakeFeatureLayer_management(gdb + "/" + Couche, Couche)
+except:
+    pass
 
 # Suppression des G, V et D de 2019, ainsi que tout les enfants des GVD2019
 nettoyage_fusion_data(Couche, ChampIDFusion, NumS, fields, dbt_etude)
-
+print("Nettoyage terminé")
 wc = "A_SUPPRIMER IS NULL AND Nature <> 'G' AND Nature <> 'V' AND Nature <> 'D'"
 arcpy.MakeFeatureLayer_management(Couche, Couche + "_propre", where_clause=wc)
-arcpy.DeleteField_management(Couche + "_propre", "A_SUPPRIMER")
+# arcpy.DeleteField_management(Couche + "_propre", "A_SUPPRIMER")
+arcpy.Delete_management(gdb + "/" + Couche + "_propre")
+print("Copying...")
 arcpy.CopyFeatures_management(Couche + "_propre", gdb + "/" + Couche + "_propre")
 
 arcpy.AddMessage("Fin du processus: " + dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
@@ -334,7 +340,7 @@ arcpy.AddMessage("Fin du processus: " + dt.datetime.now().strftime("%d/%m/%Y %H:
 # ------------------------------------Fusion----------------------------------
 
 CoucheDissolve = Couche + "_propre_Dissolved"
-arcpy.Dissolve_management(Couche + "_propre", CoucheDissolve, "ID_Fusion_" + str(seuil) + "j", [["date_date", "MIN"], ["date_date", "MAX"]])
+arcpy.Dissolve_management(Couche + "_propre", CoucheDissolve, "ID_Fusion_" + str(seuil) + "j", [[date_field_fin, "MIN"], [date_field_fin, "MAX"]])
 arcpy.Delete_management(Couche + "_propre")
 arcpy.Delete_management(Couche)
 
