@@ -26,6 +26,9 @@ arcpy.env.parallelProcessingFactor = "90%"
 
 
 # ------------------------------VARIABLES----------------------------------------
+
+####################################################################################
+####################################################################################
 # gdb = arcpy.GetParameterAsText(0) # Nom de la gdb
 # bruts = arcpy.GetParameter(1) # Liste des shp à combiner
 # annee_etude = int(arcpy.GetParameterAsText(2)) # Annee de l'étude
@@ -60,6 +63,8 @@ date_groupe_dbt = "MIN_BegDate"
 date_groupe_fin = "MAX_BegDate"
 seuil = 90 # Seuillage des incendies (défaut : 30j)
 buffer = "100 meters" # Buffer (défaut : 100m)
+#####################################################################################
+#####################################################################################
 
 arcpy.env.workspace = gdb
 Merged_Data = "Merged_Data"
@@ -265,7 +270,7 @@ if len(Sent) > 0:
 
     arcpy.AddMessage("Classification secondaire selon Groupe Incendie An-1: " + dt.datetime.now().strftime(
         "%d/%m/%Y %H:%M:%S"))
-    Sent, dicoGS, dicoSGS = calcul_groups(seuil, Relations, Sent, dicoVIIRS)
+    Sent, dicoGS, dicoSGS = calcul_groups(seuil, Relations, Sent, dicoGS)
 
 if len(Sent) > 0:
     # Classement Sentinels restant dans l'ordre croissant
