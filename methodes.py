@@ -386,11 +386,12 @@ def nettoyage_fusion_data(couche, ChampIDFusion, NumS, fields, dbt_etude):
     try:
         arcpy.AddField_management(couche, "A_SUPPRIMER", "TEXT", field_length=255)
     except:
+        print("coucou")
         arcpy.DeleteField_management(couche, "A_SUPPRIMER")
         arcpy.AddField_management(couche, "A_SUPPRIMER", "TEXT", field_length=255)
     fields.append("A_SUPPRIMER")
     uCurs = arcpy.da.UpdateCursor(couche, fields)
     for u in uCurs:
         if u[0] in liste_a_supp:
-            u[3] = "A SUPPRIMER"
+            u[4] = "A SUPPRIMER"
             uCurs.updateRow(u)
